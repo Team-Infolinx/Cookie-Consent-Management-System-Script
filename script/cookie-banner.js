@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  var bannerData = {
+  let bannerData = {
     position: "bottom",
     align: "left",
     backgroundColor: "#4285F4",
@@ -8,10 +8,19 @@ document.addEventListener("DOMContentLoaded", function () {
     body: "This website uses cookies to ensure you get the best experience on our website. By clicking Accept All Cookies, you agree to the storing of cookies on your device to enhance site navigation, analyze site usage, and assist in our marketing efforts. For more information, please see our ",
   };
 
-  var cookieCategories = [];
+  let cookieCategories = [];
+
+  let consent = {
+    consentId: "",
+    createdDate: "",
+    createdAt: "",
+    consent: "",
+    allowedCookieCategories: [],
+    rejectedCookieCategories: [],
+  };
 
   function showCookieBanner(bannerData) {
-    var cookieBanner = document.createElement("div");
+    let cookieBanner = document.createElement("div");
     cookieBanner.id = "cookie-banner";
     cookieBanner.style.position = "fixed";
     cookieBanner.style.width = "450px";
@@ -40,35 +49,35 @@ document.addEventListener("DOMContentLoaded", function () {
       bannerData.backgroundColor || "#4285F4";
     cookieBanner.style.color = bannerData.textcolor || "#fff";
 
-    var bannerText = document.createElement("h3");
+    let bannerText = document.createElement("h3");
     bannerText.style.marginTop = 0;
     bannerText.textContent = bannerData.title || "We use cookies";
 
-    var bannerBodyText = document.createElement("p");
-    var defualtBodyText =
+    let bannerBodyText = document.createElement("p");
+    let defualtBodyText =
       "This website uses cookies to ensure you get the best experience on our website. By clicking Accept All Cookies, you agree to the storing of cookies on your device to enhance site navigation, analyze site usage, and assist in our marketing efforts. For more information, please see our ";
     bannerBodyText.textContent = bannerData.body || defualtBodyText;
 
-    var policyLink = document.createElement("a");
+    let policyLink = document.createElement("a");
     policyLink.textContent = "Cookie Policy";
     policyLink.href = "https://gdpr-info.eu/";
     policyLink.target = "_blank";
 
     bannerBodyText.appendChild(policyLink);
 
-    var acceptAllButton = document.createElement("button");
+    let acceptAllButton = document.createElement("button");
     acceptAllButton.textContent = "Accept All";
     acceptAllButton.addEventListener("click", function () {
       console.log("cliked accept all");
     });
 
-    var rejectAllButton = document.createElement("button");
+    let rejectAllButton = document.createElement("button");
     rejectAllButton.textContent = "Reject All";
     rejectAllButton.addEventListener("click", function () {
       console.log("cliked reject all");
     });
 
-    var cookieSettingButton = document.createElement("button");
+    let cookieSettingButton = document.createElement("button");
     cookieSettingButton.textContent = "Cookie Settings";
     cookieSettingButton.addEventListener("click", function () {
       console.log("clicked cookie settings");
@@ -104,8 +113,8 @@ document.addEventListener("DOMContentLoaded", function () {
     cookieSettingButton.style.width = "100%";
     cookieSettingButton.style.borderRadius = "8px";
 
-    var btnDivRight = document.createElement("div");
-    var btns = document.createElement("div");
+    let btnDivRight = document.createElement("div");
+    let btns = document.createElement("div");
 
     btnDivRight.style.display = "flex";
     btnDivRight.style.flexDirection = "row";
@@ -130,8 +139,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   if (document.cookie.indexOf("cookies_accepted=true") === -1) {
-    var script = document.getElementsByTagName("script")[0];
-    var websiteId = script.getAttribute("websiteId");
+    let script = document.getElementsByTagName("script")[0];
+    let websiteId = script.getAttribute("websiteId");
     // fetch(`http://localhost:8080/api/v1/cookiebannerjs/getBanner/${websiteId}`)
     //   .then((res) => res.json())
     //   .then((bannerDetails) => {
@@ -164,10 +173,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function showCookieSettingsModal() {
-    var cookieBanner = document.getElementById("cookie-banner");
+    let cookieBanner = document.getElementById("cookie-banner");
     cookieBanner.style.display = "none";
 
-    var cookieSettingsModal = document.createElement("div");
+    let cookieSettingsModal = document.createElement("div");
     cookieSettingsModal.id = "cookie-settings-modal";
     cookieSettingsModal.style.position = "fixed";
     cookieSettingsModal.style.top = "50%";
@@ -185,69 +194,93 @@ document.addEventListener("DOMContentLoaded", function () {
     cookieSettingsModal.style.boxShadow =
       "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)";
 
-    var heading = document.createElement("h3");
+    let heading = document.createElement("h3");
     heading.style.marginTop = 0;
     heading.textContent = "Cookie Settings";
 
     cookieSettingsModal.appendChild(heading);
 
-    var bodyText = document.createElement("p");
+    let bodyText = document.createElement("p");
     bodyText.textContent = bannerData.body;
 
-    var policyLink = document.createElement("a");
+    let policyLink = document.createElement("a");
     policyLink.textContent = "Cookie Policy";
     policyLink.href = "https://gdpr-info.eu/";
     policyLink.target = "_blank";
 
-    var hrLine = document.createElement("hr");
+    let hrLine = document.createElement("hr");
     bodyText.appendChild(policyLink);
     bodyText.appendChild(hrLine);
 
     cookieSettingsModal.appendChild(bodyText);
 
-    var subHeading = document.createElement("h5");
+    let subHeading = document.createElement("h5");
     subHeading.style.margin = "0px 0px 10px 0px";
     subHeading.textContent = "Categories";
 
     cookieSettingsModal.appendChild(subHeading);
 
-    var categoryBody = document.createElement("div");
+    let categoryBody = document.createElement("div");
     categoryBody.style.overflowY = "auto";
     categoryBody.style.maxHeight = "250px";
     categoryBody.style.marginBottom = "20px";
 
-    for (var i = 0; i < cookieCategories.length; i++) {
-      var category = cookieCategories[i];
+    for (let i = 0; i < cookieCategories.length; i++) {
+      let category = cookieCategories[i];
 
-      var categoryDiv = document.createElement("div");
+      let categoryDiv = document.createElement("div");
       categoryDiv.style.display = "flex";
       categoryDiv.style.flexDirection = "row";
       categoryDiv.style.justifyContent = "space-between";
       categoryDiv.style.padding = "0px 0px 10px 0px";
 
-      var actionDiv = document.createElement("div");
+      let actionDiv = document.createElement("div");
       actionDiv.style.display = "flex";
       actionDiv.style.flexDirection = "row";
       actionDiv.style.justifyContent = "flex-end";
 
-      var mainDiv = document.createElement("div");
+      let mainDiv = document.createElement("div");
 
-      var categoryLabel = document.createElement("label");
+      let categoryLabel = document.createElement("label");
       categoryLabel.textContent = category.categoryName;
 
-      var categoryDescription = document.createElement("div");
+      let categoryDescription = document.createElement("div");
       categoryDescription.textContent = category.categoryDescription;
 
-      var categoryToggle = document.createElement("input");
+      let categoryToggle = document.createElement("input");
       categoryToggle.type = "checkbox";
       categoryToggle.name = "cookie-category";
       categoryToggle.value = category.categoryId;
 
       categoryToggle.addEventListener("change", function () {
         console.log("toggled");
-        // code for the handling consent.
-        var categoryId = this.value;
-        var consent = this.checked;
+        const categoryId = this.value;
+        let isChecked = this.checked;
+
+        var categoryIndex = consent.allowedCookieCategories.findIndex(function (
+          category
+        ) {
+          return String(category.categoryId) === String(categoryId);
+        });
+        console.log("categoryId : ", categoryId);
+
+        let addingCategory = cookieCategories.find(function (category) {
+          return String(category.categoryId) == String(categoryId);
+        });
+
+        console.log("adding category : ", addingCategory);
+        console.log("categoryid", categoryId);
+
+        // If the checkbox is checked and the category is not already in the allowed category array
+        if (isChecked && categoryIndex === -1) {
+          consent.allowedCookieCategories.push(addingCategory);
+        }
+
+        // If the checkbox is unchecked and the category is in the allowed category array
+        if (!isChecked && categoryIndex !== -1) {
+          consent.allowedCookieCategories.splice(categoryIndex, 1);
+        }
+        console.log("allowed catgeoires : ", consent.allowedCookieCategories);
       });
 
       actionDiv.appendChild(categoryToggle);
@@ -272,18 +305,21 @@ document.addEventListener("DOMContentLoaded", function () {
     acceptAllButton.textContent = "Accept All";
     acceptAllButton.addEventListener("click", function () {
       console.log("cliked accept all");
+      acceptCookiesInModal();
     });
 
     var saveButton = document.createElement("button");
     saveButton.textContent = "Save";
     saveButton.addEventListener("click", function () {
       console.log("Clicked save");
+      acceptCookiesInModal();
     });
 
     var rejectAllButton = document.createElement("button");
     rejectAllButton.textContent = "Reject All";
     rejectAllButton.addEventListener("click", function () {
       console.log("cliked reject all");
+      rejectCookiesInModal();
     });
 
     acceptAllButton.style.fontSize = "14px";
@@ -322,9 +358,27 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.appendChild(cookieSettingsModal);
   }
 
-  function acceptCookies() {
+  function acceptCookiesInModal() {
     document.cookie = "cookies_accepted=true; path=/";
-    const cookieBanner = document.getElementById("cookie-banner");
-    document.body.removeChild(cookieBanner);
+    // const cookieBanner = document.getElementById("cookie-banner");
+    // document.body.removeChild(cookieBanner);
+    let cookieSettingsModal = document.getElementById("cookie-settings-modal");
+    if (cookieSettingsModal) {
+      cookieSettingsModal.parentNode.removeChild(cookieSettingsModal);
+    }
+  }
+
+  function rejectCookiesInModal() {
+    // document.cookie = "cookies_accepted=false: path=/";
+    // const cookieBanner = document.getElementById("cookie-banner");
+    // document.appendChild(cookieBanner);
+    var cookieSettingsModal = document.getElementById("cookie-settings-modal");
+    if (cookieSettingsModal) {
+      cookieSettingsModal.style.display = "none";
+    }
+    var cookieBanner = document.getElementById("cookie-banner");
+    if (cookieBanner) {
+      cookieBanner.style.display = "block";
+    }
   }
 });
