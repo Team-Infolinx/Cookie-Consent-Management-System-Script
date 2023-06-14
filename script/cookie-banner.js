@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
+  let base_url = "http://localhost:8080";
+  let websiteId;
+
   let bannerData = {
     position: "bottom",
     align: "left",
@@ -8,7 +11,10 @@ document.addEventListener("DOMContentLoaded", function () {
     body: "This website uses cookies to ensure you get the best experience on our website. By clicking Accept All Cookies, you agree to the storing of cookies on your device to enhance site navigation, analyze site usage, and assist in our marketing efforts. For more information, please see our ",
   };
 
+  let fetchedBanner = {};
+
   let cookieCategories = [];
+  let allowedCategories = [];
 
   let consent = {
     consentId: "",
@@ -19,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
     rejectedCookieCategories: [],
   };
 
-  function showCookieBanner(bannerData) {
+  function showCookieBanner(banner) {
     let cookieBanner = document.createElement("div");
     cookieBanner.id = "cookie-banner";
     cookieBanner.style.position = "fixed";
@@ -28,16 +34,13 @@ document.addEventListener("DOMContentLoaded", function () {
     cookieBanner.style.padding = "15px";
     cookieBanner.style.borderRadius = "8px";
 
-    if (bannerData.position === "top" && bannerData.align === "left") {
+    if (banner.position === "top" && banner.align === "left") {
       cookieBanner.style.top = "10px";
       cookieBanner.style.left = "10px";
-    } else if (bannerData.position === "top" && bannerData.align === "right") {
+    } else if (banner.position === "top" && banner.align === "right") {
       cookieBanner.style.top = "10px";
       cookieBanner.style.right = "10px";
-    } else if (
-      bannerData.position === "bottom" &&
-      bannerData.align === "left"
-    ) {
+    } else if (banner.position === "bottom" && banner.align === "left") {
       cookieBanner.style.bottom = "10px";
       cookieBanner.style.left = "10px";
     } else {
@@ -45,9 +48,8 @@ document.addEventListener("DOMContentLoaded", function () {
       cookieBanner.style.right = "10px";
     }
 
-    cookieBanner.style.backgroundColor =
-      bannerData.backgroundColor || "#4285F4";
-    cookieBanner.style.color = bannerData.textcolor || "#fff";
+    cookieBanner.style.backgroundColor = banner.bannerColor || "#4285F4";
+    cookieBanner.style.color = banner.bannerTextColor || "#fff";
 
     let bannerText = document.createElement("h3");
     bannerText.style.marginTop = 0;
@@ -69,12 +71,14 @@ document.addEventListener("DOMContentLoaded", function () {
     acceptAllButton.textContent = "Accept All";
     acceptAllButton.addEventListener("click", function () {
       console.log("cliked accept all");
+      acceptAllCookiesClick();
     });
 
     let rejectAllButton = document.createElement("button");
     rejectAllButton.textContent = "Reject All";
     rejectAllButton.addEventListener("click", function () {
       console.log("cliked reject all");
+      rejectCookiesInModal();
     });
 
     let cookieSettingButton = document.createElement("button");
@@ -88,27 +92,27 @@ document.addEventListener("DOMContentLoaded", function () {
     acceptAllButton.style.border = "none";
     acceptAllButton.style.padding = "10px 0px 10px 0px";
     acceptAllButton.style.width = "50%";
-    acceptAllButton.style.background = bannerData.textColor;
-    acceptAllButton.style.color = bannerData.backgroundColor;
+    acceptAllButton.style.background = banner.bannerTextColor;
+    acceptAllButton.style.color = banner.bannerColor;
     acceptAllButton.style.borderRadius = "8px";
 
     rejectAllButton.style.fontSize = "16px";
-    rejectAllButton.style.color = bannerData.textColor;
+    rejectAllButton.style.color = banner.bannerTextColor;
     rejectAllButton.style.border = "solid";
     rejectAllButton.style.borderWidth = "2px";
-    rejectAllButton.style.backgroundColor = bannerData.backgroundColor;
-    rejectAllButton.style.borderColor = bannerData.textColor;
+    rejectAllButton.style.backgroundColor = banner.bannerColor;
+    rejectAllButton.style.borderColor = banner.bannerTextColor;
     rejectAllButton.style.padding = "10px 0px 10px 0px";
     rejectAllButton.style.width = "50%";
     rejectAllButton.style.borderRadius = "8px";
     rejectAllButton.style.marginRight = "5px";
 
     cookieSettingButton.style.fontSize = "16px";
-    cookieSettingButton.style.color = bannerData.textColor;
+    cookieSettingButton.style.color = banner.bannerTextColor;
     cookieSettingButton.style.border = "solid";
     cookieSettingButton.style.borderWidth = "2px";
-    cookieSettingButton.style.backgroundColor = bannerData.backgroundColor;
-    cookieSettingButton.style.borderColor = bannerData.textColor;
+    cookieSettingButton.style.backgroundColor = banner.bannerColor;
+    cookieSettingButton.style.borderColor = banner.bannerTextColor;
     cookieSettingButton.style.padding = "10px 0px 10px 0px";
     cookieSettingButton.style.width = "100%";
     cookieSettingButton.style.borderRadius = "8px";
@@ -140,22 +144,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (document.cookie.indexOf("cookies_accepted=true") === -1) {
     let script = document.getElementsByTagName("script")[0];
-    let websiteId = script.getAttribute("websiteId");
-    // fetch(`http://localhost:8080/api/v1/cookiebannerjs/getBanner/${websiteId}`)
-    //   .then((res) => res.json())
-    //   .then((bannerDetails) => {
-    //     console.log(JSON.stringify(bannerDetails));
-    //     showCookieBanner(bannerDetails);
-    //   });
+    websiteId = script.getAttribute("websiteId");
+    fetch(`http://localhost:8080/api/v1/banners/${websiteId}`)
+      .then((res) => res.json())
+      .then((bannerDetails) => {
+        fetchedBanner = bannerDetails;
+        console.log(JSON.stringify(fetchedBanner));
+        showCookieBanner(bannerDetails);
+      });
     console.log(websiteId);
     fetchCookieCategories(websiteId);
-    showCookieBanner(bannerData);
+    // showCookieBanner(bannerData);
   }
 
   function fetchCookieCategories(websiteId) {
-    fetch(
-      `http://localhost:8080/api/v1/websites/${websiteId}/cookie-categories`
-    )
+    fetch(`${base_url}/api/v1/websites/${websiteId}/cookie-categories`)
       .then(function (response) {
         if (response.ok) {
           return response.json();
@@ -305,14 +308,14 @@ document.addEventListener("DOMContentLoaded", function () {
     acceptAllButton.textContent = "Accept All";
     acceptAllButton.addEventListener("click", function () {
       console.log("cliked accept all");
-      acceptCookiesInModal();
+      acceptAllCookiesClick();
     });
 
     var saveButton = document.createElement("button");
     saveButton.textContent = "Save";
     saveButton.addEventListener("click", function () {
       console.log("Clicked save");
-      acceptCookiesInModal();
+      saveInModal();
     });
 
     var rejectAllButton = document.createElement("button");
@@ -326,8 +329,8 @@ document.addEventListener("DOMContentLoaded", function () {
     acceptAllButton.style.border = "none";
     acceptAllButton.style.padding = "10px 0px 10px 0px";
     acceptAllButton.style.width = "30%";
-    acceptAllButton.style.background = bannerData.backgroundColor;
-    acceptAllButton.style.color = bannerData.textColor;
+    acceptAllButton.style.background = fetchedBanner.bannerColor;
+    acceptAllButton.style.color = fetchedBanner.bannerTextColor;
     acceptAllButton.style.borderRadius = "8px";
 
     rejectAllButton.style.fontSize = "16px";
@@ -360,8 +363,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function acceptCookiesInModal() {
     document.cookie = "cookies_accepted=true; path=/";
-    // const cookieBanner = document.getElementById("cookie-banner");
-    // document.body.removeChild(cookieBanner);
     let cookieSettingsModal = document.getElementById("cookie-settings-modal");
     if (cookieSettingsModal) {
       cookieSettingsModal.parentNode.removeChild(cookieSettingsModal);
@@ -369,16 +370,113 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function rejectCookiesInModal() {
-    // document.cookie = "cookies_accepted=false: path=/";
-    // const cookieBanner = document.getElementById("cookie-banner");
-    // document.appendChild(cookieBanner);
     var cookieSettingsModal = document.getElementById("cookie-settings-modal");
     if (cookieSettingsModal) {
-      cookieSettingsModal.style.display = "none";
+      cookieSettingsModal.parentNode.removeChild(cookieSettingsModal);
     }
     var cookieBanner = document.getElementById("cookie-banner");
     if (cookieBanner) {
       cookieBanner.style.display = "block";
     }
+    fetch(`${base_url}/api/v1/websites/${websiteId}/consents`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([]),
+    })
+      .then(function (response) {
+        if (response.ok) {
+          response
+            .json()
+            .then(function (data) {
+              console.log("Consent saved successfully: ", data);
+            })
+            .catch(function (error) {
+              console.error("Error parsing response:", error);
+            });
+        } else {
+          console.error("Error saving consent:", response.statusText);
+        }
+      })
+      .catch(function (error) {
+        console.error("Request error:", error);
+      });
+  }
+
+  function saveInModal() {
+    var cookieSettingsModal = document.getElementById("cookie-settings-modal");
+    console.log("length ", consent.allowedCookieCategories.length);
+    if (consent.allowedCookieCategories.length === 0) {
+      rejectCookiesInModal();
+      return;
+    }
+    document.cookie = "cookies_accepted=true; path=/";
+    if (cookieSettingsModal) {
+      cookieSettingsModal.parentNode.removeChild(cookieSettingsModal);
+    }
+
+    fetch(`${base_url}/api/v1/websites/${websiteId}/consents`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(consent.allowedCookieCategories),
+    })
+      .then(function (response) {
+        console.log("consent : ", consent);
+        if (response.ok) {
+          response
+            .json()
+            .then(function (data) {
+              console.log("Consent saved successfully: ", data);
+            })
+            .catch(function (error) {
+              console.error("Error parsing response:", error);
+            });
+        } else {
+          console.error("Error saving consent:", response.statusText);
+        }
+      })
+      .catch(function (error) {
+        console.error("Request error:", error);
+      });
+  }
+
+  function acceptAllCookiesClick() {
+    document.cookie = "cookies_accepted=true; path=/";
+    var cookieSettingsModal = document.getElementById("cookie-settings-modal");
+    var cookieBanner = document.getElementById("cookie-banner");
+    if (cookieSettingsModal) {
+      cookieSettingsModal.parentNode.removeChild(cookieSettingsModal);
+    }
+    if (cookieBanner) {
+      cookieBanner.parentNode.removeChild(cookieBanner);
+    }
+    fetch(`${base_url}/api/v1/websites/${websiteId}/consents`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(cookieCategories),
+    })
+      .then(function (response) {
+        console.log("consent : ", consent);
+        if (response.ok) {
+          response
+            .json()
+            .then(function (data) {
+              console.log("Consent saved successfully: ", data);
+            })
+            .catch(function (error) {
+              console.error("Error parsing response:", error);
+            });
+        } else {
+          console.error("Error saving consent:", response.statusText);
+        }
+      })
+      .catch(function (error) {
+        console.error("Request error:", error);
+      });
   }
 });
